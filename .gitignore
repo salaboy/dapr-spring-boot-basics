@@ -3,7 +3,8 @@
 
 # Log file
 *.log
-
+target/
+.DS_Store
 # BlueJ files
 *.ctxt
 
