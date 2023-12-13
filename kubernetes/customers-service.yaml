@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-service-deployment
+spec:
+  selector:
+    matchLabels:
+      app: customers-service
+  template:
+    metadata:
+      annotations:  
+        dapr.io/app-id: customers-service
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true"
+      labels:
+        app: customers-service
+    spec:
+      containers:
+      - name: customers-service
+        image: salaboy/customers-service:v0.1.0 
+        imagePullPolicy: Always
+        env:
+        - name: STATE_STORE_NAME 
+          value: kvstore
+        - name: JAVA_OPTS
+          value: "-XX:+UseParallelGC -XX:ActiveProcessorCount=1 -XX:MaxRAMPercentage=75 -XX:TieredStopAtLevel=1"  
+        resources:
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+          requests:
+            cpu: "1"
+            memory: "2Gi"  
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: customers-service
+spec:
+  selector:
+    app: customers-service
+  ports:
+  - port: 80
+    targetPort: 8080
